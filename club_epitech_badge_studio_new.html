@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="fr" class="light">
+<!--
+  =============================================================================
+  CLUB EPITECH - BADGE STUDIO (CR80 RECTO / VERSO)
+  =============================================================================
+  Architecture logicielle optimisée pour l'impression haute lisibilité (300 DPI)
+  Conçue pour le campus Epitech Nancy (Place Stanislas, Rives de Meurthe).
+  =============================================================================
+-->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{EPITECH} &lt;Club Epitech_&gt; - Badge Studio</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=JetBrains+Mono:wght@700;800;900&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' }</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <style>
+    :root {
+      --epitech-blue: #013afb;
+      --epitech-tech: #00ff97;
+      --epitech-together: #ff5f3a;
+      --epitech-tomorrow: #ff1ef7;
+    }
+    html:not(.dark) body {
+      background-color: #f1f5f9;
+      color: #0f172a;
+      background-image: 
+        linear-gradient(to right, rgba(1, 58, 251, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(1, 58, 251, 0.05) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+    html.dark body {
+      background-color: #0f0f11;
+      color: #f1f5f9;
+      background-image: 
+        linear-gradient(to right, rgba(1, 58, 251, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(1, 58, 251, 0.05) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+    body { font-family: 'IBM Plex Sans', sans-serif; transition: background-color 0.2s, color 0.2s; }
+    .font-anton { font-family: 'Anton', sans-serif; }
+    .font-space-mono { font-family: 'Space Mono', monospace; }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Sentinelles invisibles forçant le pré-chargement des polices dans le canvas -->
+  <div aria-hidden="true" style="position: absolute; opacity: 0; pointer-events: none; z-index: -1;">
+    <span style="font-family: 'Bebas Neue';">CLUB EPITECH SCANNE AGENDA EXP PROFIL 123</span>
+    <span style="font-family: 'JetBrains Mono'; font-weight: 700;">EPITECH NOM CAMPUS CRÉER APPRENDRE PARTAGER PROGRESSER 123</span>
+    <span style="font-family: 'JetBrains Mono'; font-weight: 900;">EPITECH 123</span>
+    <span style="font-family: 'Anton';">EPITECH</span>
+  </div>
+
+  <header class="border-b bg-white/95 dark:bg-[#181818]/95 border-slate-200 dark:border-[#262626] backdrop-blur sticky top-0 z-30 px-6 py-4 flex flex-wrap items-center justify-between gap-4 shadow-sm">
+    <div class="flex items-center gap-4">
+      <div class="flex items-center tracking-wider">
+        <span class="text-[#013afb] text-2xl font-space-mono font-bold">{</span>
+        <span class="font-anton text-2xl tracking-widest px-1 text-slate-900 dark:text-white">EPITECH</span>
+        <span class="text-[#013afb] text-2xl font-space-mono font-bold">}</span>
+      </div>
+      <div class="h-6 w-px bg-slate-300 dark:bg-slate-700 hidden sm:block"></div>
+      <div>
+        <h1 class="text-sm font-space-mono font-bold text-slate-900 dark:text-white uppercase flex items-center gap-2">
+          &lt;CLUB_EPITECH /&gt; 
+          <span class="text-[10px] px-2 py-0.5 rounded bg-[#013afb]/10 dark:bg-[#013afb]/20 text-[#013afb] dark:text-[#00ff97] border border-[#013afb]/30 dark:border-[#00ff97]/30 font-space-mono font-normal">BADGE_STUDIO</span>
+        </h1>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Générateur Recto &amp; Verso CR80 (85,60 × 53,98 mm) - Typographie Grand Format</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <button id="themeToggleBtn" class="px-3 py-2 text-xs font-space-mono font-bold rounded-lg border transition flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300 dark:bg-[#222222] dark:hover:bg-[#2c2c2c] dark:text-slate-200 dark:border-[#333333]">
+        <span id="themeIcon">🌙</span>
+        <span id="themeLabel">&lt;MODE: SOMBRE /&gt;</span>
+      </button>
+
+      <div id="topActions" class="hidden flex items-center gap-3">
+        <button id="reRollAllBtn" class="px-3.5 py-2 text-xs font-space-mono font-bold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 dark:bg-[#222222] dark:hover:bg-[#2c2c2c] dark:text-slate-200 dark:border-[#333333] transition flex items-center gap-2">
+          <span class="text-[#013afb] dark:text-[#00ff97] font-bold">&lt;/&gt;</span>
+          RE-GÉNÉRER CANARDS_
+        </button>
+        <button id="downloadZipBtn" class="px-4 py-2 text-xs font-space-mono font-bold rounded-lg bg-[#013afb] hover:bg-[#002fd1] text-white shadow-lg shadow-[#013afb]/30 transition flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          EXPORTER TOUT (.ZIP)_
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl mx-auto w-full p-6 space-y-6">
+
+    <!-- Configuration -->
+    <section class="bg-white dark:bg-[#181818] border border-slate-200 dark:border-[#2a2a2a] rounded-2xl p-6 shadow-xl relative overflow-hidden space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-[#282828] pb-4">
+        <div>
+          <h2 class="text-xl font-anton tracking-wide text-slate-900 dark:text-white uppercase">
+            &lt;CONFIGURATION_&amp;_DONNÉES /&gt;
+          </h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Paramétrez les URLs, le campus et le logo officiel du verso.</p>
+        </div>
+        <div class="flex items-center gap-2 text-[11px] font-space-mono">
+          <span class="text-emerald-600 dark:text-[#00ff97] font-bold">&lt;TECH&gt;</span>
+          <span class="text-[#ff5f3a] font-bold">&lt;TOGETHER&gt;</span>
+          <span class="text-[#ff1ef7] font-bold">&lt;TOMORROW&gt;</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-xs font-space-mono text-slate-700 dark:text-slate-300 mb-1">
+            &lt;URL_RECTO (Profil / Jump) /&gt;
+          </label>
+          <input id="urlRectoInput" type="text" value="https://morganeheudelot1.github.io/club-epitech-redirect-verso/profil.html" class="w-full bg-slate-50 dark:bg-[#101010] border border-slate-300 dark:border-[#303030] text-slate-900 dark:text-slate-100 text-xs px-3 py-2.5 rounded-lg font-space-mono focus:outline-none focus:border-[#013afb]" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-space-mono text-slate-700 dark:text-slate-300 mb-1">
+            &lt;URL_VERSO (Agenda du Club) /&gt;
+          </label>
+          <input id="urlVersoInput" type="text" value="https://morganeheudelot1.github.io/club-epitech-redirect-verso/index.html" class="w-full bg-slate-50 dark:bg-[#101010] border border-slate-300 dark:border-[#303030] text-slate-900 dark:text-slate-100 text-xs px-3 py-2.5 rounded-lg font-space-mono focus:outline-none focus:border-[#013afb]" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-space-mono text-slate-700 dark:text-slate-300 mb-1">
+            &lt;CAMPUS /&gt;
+          </label>
+          <input id="campusInput" type="text" value="NANCY" class="w-full bg-slate-50 dark:bg-[#101010] border border-slate-300 dark:border-[#303030] text-slate-900 dark:text-white text-xs px-3 py-2.5 rounded-lg font-space-mono font-bold uppercase focus:outline-none focus:border-[#013afb]" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-space-mono text-slate-700 dark:text-slate-300 mb-1">
+            &lt;LOGO VERSO (.png / .svg) /&gt;
+          </label>
+          <input type="file" id="logoUploadInput" accept="image/*" class="w-full text-xs text-slate-500 dark:text-slate-400 file:mr-2 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-space-mono file:bg-[#013afb]/10 file:text-[#013afb] hover:file:bg-[#013afb]/20 cursor-pointer" />
+        </div>
+      </div>
+
+      <!-- Dépôt Excel -->
+      <div id="dropZone" class="border-2 border-dashed border-slate-300 dark:border-[#333333] hover:border-[#013afb] hover:bg-[#013afb]/5 rounded-xl p-8 text-center transition cursor-pointer bg-slate-50/80 dark:bg-[#121212] group">
+        <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden" />
+        <div class="w-12 h-12 mx-auto mb-3 rounded-lg bg-[#013afb]/10 dark:bg-[#013afb]/15 text-[#013afb] border border-[#013afb]/20 flex items-center justify-center group-hover:scale-105 transition">
+          <svg class="w-6 h-6 text-[#013afb] dark:text-[#00ff97]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+        </div>
+        <p class="text-sm font-semibold text-slate-900 dark:text-white">Déposez votre fichier Excel des adhérents ou cliquez pour parcourir</p>
+        <p class="text-xs text-slate-500 mt-1 font-space-mono">Formats acceptés : .xlsx, .xls, .csv</p>
+      </div>
+
+      <div id="fileInfoBar" class="hidden pt-1 flex items-center justify-between text-xs font-space-mono">
+        <span id="fileSummary" class="text-emerald-600 dark:text-[#00ff97] font-bold">&lt;0 ADHÉRENT(S) CHARGÉ(S) /&gt;</span>
+        <button id="resetBtn" class="text-[#ff5f3a] hover:text-[#ff7857] transition underline underline-offset-4">RÉINITIALISER_</button>
+      </div>
+    </section>
+
+    <!-- Affichage Recto / Verso -->
+    <section class="bg-white dark:bg-[#181818] border border-slate-200 dark:border-[#2a2a2a] rounded-2xl p-6 shadow-xl space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-[#282828] pb-4">
+        <div>
+          <h2 class="text-xl font-anton tracking-wide text-slate-900 dark:text-white uppercase">
+            &lt;CHOIX_GÉNÉRATION /&gt;
+          </h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Basculez entre le Recto des membres et le Verso officiel.</p>
+        </div>
+
+        <div class="inline-flex rounded-xl p-1 bg-slate-100 dark:bg-[#101010] border border-slate-300 dark:border-[#303030]">
+          <button id="showRectoBtn" class="px-5 py-2 text-xs font-space-mono font-bold rounded-lg transition bg-[#013afb] text-white shadow-md">
+            &lt;RECTO (Membres) /&gt;
+          </button>
+          <button id="showVersoBtn" class="px-5 py-2 text-xs font-space-mono font-bold rounded-lg transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+            &lt;VERSO (Agenda) /&gt;
+          </button>
+        </div>
+      </div>
+
+      <!-- VUE VERSO -->
+      <div id="versoView" class="hidden space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50 dark:bg-[#121212] p-4 rounded-xl border border-slate-200 dark:border-[#2c2c2c]">
+          <div>
+            <h3 class="text-sm font-space-mono font-bold text-slate-900 dark:text-white uppercase">Modèle Verso Club Epitech (Grand Format Textes)</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Typographies nettes et renforcées pour impression CR80 (1011 × 638 px).</p>
+          </div>
+          <button onclick="downloadVersoCard()" class="px-4 py-2 rounded-lg bg-[#013afb] hover:bg-[#002fd1] text-white font-space-mono text-xs font-bold transition shadow-md shadow-[#013afb]/30 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            TÉLÉCHARGER LE VERSO (PNG HD)_
+          </button>
+        </div>
+
+        <div class="max-w-2xl mx-auto bg-slate-100 dark:bg-[#141414] p-4 rounded-2xl border border-slate-200 dark:border-[#2a2a2a] shadow-xl">
+          <div class="relative w-full overflow-hidden rounded-xl shadow-lg border border-slate-200 dark:border-slate-800 bg-[#0f0f11]">
+            <canvas id="versoCanvas" width="1011" height="638" class="w-full h-auto block"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- VUE RECTO -->
+      <div id="rectoView" class="space-y-4">
+        <div id="emptyRectoNotice" class="text-center py-10 text-slate-400 font-space-mono text-xs">
+          Veuillez importer un fichier Excel pour générer les badges Recto de vos membres.
+        </div>
+        <div id="cardsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const versoLogoImg = new Image();
+    let isLogoLoaded = false;
+
+    // Prise en charge d'un logo personnalisé via upload
+    document.getElementById('logoUploadInput').addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          isLogoLoaded = false;
+          versoLogoImg.onload = () => {
+            isLogoLoaded = true;
+            drawVersoCard();
+          };
+          versoLogoImg.src = evt.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // -------------------------------------------------------------
+    // DESSIN DU VERSO (TEXTES AGRANDIS ET LISIBLES À L'IMPRESSION)
+    // -------------------------------------------------------------
+    function drawVersoCard() {
+      const canvas = document.getElementById('versoCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const W = 1011;
+      const H = 638;
+
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = '#f2f3f5';
+      ctx.fillRect(0, 0, W, H);
+
+      // Mosaïque des coins (géométrie charte Epitech)
+      const U = 72;
+      ctx.fillStyle = '#013afb'; ctx.fillRect(0, 0, U, U);
+      ctx.fillStyle = '#00ff97'; ctx.fillRect(U, 0, U, U);
+      ctx.fillStyle = '#ff1ef7'; ctx.fillRect(W - U, 0, U, U);
+      ctx.fillStyle = '#6366f1'; ctx.fillRect(W - U * 2, 0, U, U);
+
+      ctx.fillStyle = '#013afb'; ctx.fillRect(W - U * 1.4, H - U * 1.4, U * 1.4, U * 1.4);
+      ctx.fillStyle = '#00ff97'; ctx.fillRect(W - U * 2.4, H - U, U, U);
+      ctx.fillStyle = '#6366f1'; ctx.fillRect(0, H - U, U, U);
+
+      let qrCenterY = 275;
+
+      if (isLogoLoaded && versoLogoImg.naturalWidth > 0) {
+        const maxLogoW = 400;
+        const maxLogoH = 95;
+        const imgRatio = versoLogoImg.naturalWidth / versoLogoImg.naturalHeight;
+        let targetW = maxLogoW;
+        let targetH = targetW / imgRatio;
+
+        if (targetH > maxLogoH) {
+          targetH = maxLogoH;
+          targetW = targetH * imgRatio;
+        }
+
+        const x = (W - targetW) / 2;
+        const y = 32;
+        ctx.drawImage(versoLogoImg, x, y, targetW, targetH);
+
+        // Titre sous le logo personnalisé
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#013afb';
+        ctx.font = '900 32px "Bebas Neue", sans-serif';
+        ctx.fillText('CLUB EPITECH', W / 2 - 14, y + targetH + 34);
+
+        ctx.fillStyle = '#ff1ef7';
+        ctx.fillRect(W / 2 + 76, y + targetH + 20, 20, 10);
+
+        qrCenterY = y + targetH + 145;
+      } else {
+        // En-tête par défaut
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#013afb';
+        ctx.font = '900 56px "Bebas Neue", sans-serif';
+        ctx.fillText('CLUB EPITECH', W / 2 - 18, 95);
+
+        ctx.fillStyle = '#ff1ef7';
+        ctx.fillRect(W / 2 + 120, 72, 26, 14);
+
+        ctx.font = '700 17px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#475569';
+        ctx.fillText('< AGENDA OFFICIEL & RESSOURCES >', W / 2, 130);
+
+        qrCenterY = 275;
+      }
+
+      // Grand QR Code au verso
+      const qrSize = 195;
+      const qrX = (W - qrSize) / 2;
+      const qrY = qrCenterY - (qrSize / 2);
+
+      ctx.fillStyle = '#ffffff';
+      if (ctx.roundRect) {
+        ctx.beginPath();
+        ctx.roundRect(qrX - 14, qrY - 14, qrSize + 28, qrSize + 28, 18);
+        ctx.fill();
+      } else {
+        ctx.fillRect(qrX - 14, qrY - 14, qrSize + 28, qrSize + 28);
+      }
+
+      const qrCanvas = document.createElement('canvas');
+      new QRious({
+        element: qrCanvas,
+        value: getVersoUrl(),
+        size: qrSize,
+        level: 'H'
+      });
+      ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
+
+      // Mini canard central dans le QR code
+      const centerDuckX = qrX + qrSize / 2;
+      const centerDuckY = qrY + qrSize / 2;
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(centerDuckX - 20, centerDuckY - 20, 40, 40);
+      ctx.fillStyle = '#0052ff'; ctx.fillRect(centerDuckX - 15, centerDuckY - 15, 30, 30);
+      ctx.fillStyle = '#f97316'; ctx.fillRect(centerDuckX - 9, centerDuckY + 1, 18, 7);
+
+      // Mentions inférieures GRAND FORMAT
+      ctx.fillStyle = '#013afb';
+      ctx.font = '900 54px "Bebas Neue", sans-serif';
+      ctx.fillText('SCANNE // AGENDA', W / 2, 465);
+
+      ctx.font = '700 18px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#334155';
+      ctx.fillText('< TECH // TOGETHER // TOMORROW >', W / 2, 510);
+
+      ctx.font = '800 20px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#013afb';
+      ctx.fillText('LE FUTUR SE CODE ICI_', W / 2, 550);
+
+      ctx.textAlign = 'left';
+    }
+
+    // -------------------------------------------------------------
+    // GESTION DU THÈME
+    // -------------------------------------------------------------
+    const htmlEl = document.documentElement;
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const themeIcon = document.getElementById('themeIcon');
+    const themeLabel = document.getElementById('themeLabel');
+
+    function applyTheme(isDark) {
+      if (isDark) {
+        htmlEl.classList.add('dark');
+        themeIcon.textContent = '☀️';
+        themeLabel.textContent = '<MODE: CLAIR />';
+      } else {
+        htmlEl.classList.remove('dark');
+        themeIcon.textContent = '🌙';
+        themeLabel.textContent = '<MODE: SOMBRE />';
+      }
+      localStorage.setItem('epitech_cc_theme', isDark ? 'dark' : 'light');
+    }
+
+    const savedTheme = localStorage.getItem('epitech_cc_theme');
+    applyTheme(savedTheme === 'dark');
+
+    themeToggleBtn.addEventListener('click', () => {
+      applyTheme(!htmlEl.classList.contains('dark'));
+    });
+
+    // Bascule Recto / Verso
+    const showRectoBtn = document.getElementById('showRectoBtn');
+    const showVersoBtn = document.getElementById('showVersoBtn');
+    const rectoView = document.getElementById('rectoView');
+    const versoView = document.getElementById('versoView');
+
+    showRectoBtn.addEventListener('click', () => {
+      showRectoBtn.className = "px-5 py-2 text-xs font-space-mono font-bold rounded-lg transition bg-[#013afb] text-white shadow-md";
+      showVersoBtn.className = "px-5 py-2 text-xs font-space-mono font-bold rounded-lg transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
+      rectoView.classList.remove('hidden');
+      versoView.classList.add('hidden');
+    });
+
+    showVersoBtn.addEventListener('click', () => {
+      showVersoBtn.className = "px-5 py-2 text-xs font-space-mono font-bold rounded-lg transition bg-[#013afb] text-white shadow-md";
+      showRectoBtn.className = "px-5 py-2 text-xs font-space-mono font-bold rounded-lg transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
+      versoView.classList.remove('hidden');
+      rectoView.classList.add('hidden');
+      drawVersoCard();
+    });
+
+    // -------------------------------------------------------------
+    // ACCESSOIRES ET COULEURS DES CANARDS
+    // -------------------------------------------------------------
+    const DUCK_COLORS = [
+      { name: 'Bleu Epitech', body: '#0052ff', shade: '#0038b8' },
+      { name: 'Jaune Gold', body: '#f59e0b', shade: '#b45309' },
+      { name: 'Vert Menthe Cyber', body: '#10b981', shade: '#047857' },
+      { name: 'Magenta Synthwave', body: '#d946ef', shade: '#a21caf' },
+      { name: 'Violet Neon', body: '#8b5cf6', shade: '#6d28d9' },
+      { name: 'Stealth Gris', body: '#475569', shade: '#1e293b' },
+      { name: 'Cyan Électrique', body: '#06b6d4', shade: '#0e7490' }
+    ];
+
+    const BEAK_COLORS = ['#f97316', '#ea580c', '#fb923c'];
+
+    const ACCESSORIES_LIST = [
+      'gamer_rgb_headset',
+      'cyber_neon_visor',
+      'stanislas_gold_crown',
+      'rpg_archmage_hat',
+      'hacker_terminal_shades',
+      'retro_plumber_cap',
+      'shinobi_ninja_band',
+      'stealth_tux_bowtie',
+      'vr_matrix_goggles',
+      'punk_cyber_crest'
+    ];
+
+    let membersList = [];
+
+    const DUCK_BASE_SHAPE = [
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
+      [0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0],
+      [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+      [0,0,0,1,1,4,5,1,1,5,4,1,1,0,0,0],
+      [0,0,0,1,1,4,4,1,1,4,4,1,1,0,0,0],
+      [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+      [0,0,0,0,3,3,3,3,3,3,3,3,0,0,0,0],
+      [0,0,0,0,0,3,3,3,3,3,3,0,0,0,0,0],
+      [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+      [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+      [0,1,1,2,1,1,1,1,1,1,1,1,2,1,1,0],
+      [0,1,1,2,1,1,1,1,1,1,1,1,2,1,1,0],
+      [0,0,1,1,2,2,1,1,1,1,2,2,1,1,0,0],
+      [0,0,0,1,1,1,2,2,2,2,1,1,1,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    ];
+
+    function getRandomItem(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function createDuckProfile() {
+      return {
+        color: getRandomItem(DUCK_COLORS),
+        beakColor: getRandomItem(BEAK_COLORS),
+        accessory: getRandomItem(ACCESSORIES_LIST),
+        accentColor: getRandomItem(['#00ff97', '#ff1ef7', '#00d2ff', '#ff5f3a', '#ffd700', '#a855f7'])
+      };
+    }
+
+    function drawDuckAvatar(canvas, profile) {
+      const ctx = canvas.getContext('2d');
+      const size = 16;
+      const px = canvas.width / size;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      grad.addColorStop(0, '#f8fafc');
+      grad.addColorStop(1, '#e2e8f0');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+          const val = DUCK_BASE_SHAPE[y][x];
+          if (val === 0) continue;
+          if (val === 1) ctx.fillStyle = profile.color.body;
+          else if (val === 2) ctx.fillStyle = profile.color.shade;
+          else if (val === 3) ctx.fillStyle = profile.beakColor;
+          else if (val === 4) ctx.fillStyle = '#0f172a';
+          else if (val === 5) ctx.fillStyle = '#ffffff';
+          ctx.fillRect(x * px, y * px, px, px);
+        }
+      }
+
+      const acc = profile.accessory;
+      if (acc === 'gamer_rgb_headset') {
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(4 * px, 0.6 * px, 8 * px, 1.4 * px);
+        ctx.fillStyle = profile.accentColor;
+        ctx.fillRect(1.6 * px, 3.2 * px, 2.2 * px, 4.2 * px);
+        ctx.fillRect(12.2 * px, 3.2 * px, 2.2 * px, 4.2 * px);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(2.2 * px, 4.2 * px, 1 * px, 2 * px);
+        ctx.fillRect(12.8 * px, 4.2 * px, 1 * px, 2 * px);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(3.5 * px, 6.4 * px, 3.5 * px, 0.9 * px);
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(6.6 * px, 6.2 * px, 1.2 * px, 1.2 * px);
+      } else if (acc === 'cyber_neon_visor') {
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(2.5 * px, 3.8 * px, 11 * px, 2.4 * px);
+        ctx.fillStyle = profile.accentColor;
+        ctx.fillRect(3 * px, 4.2 * px, 10 * px, 1.4 * px);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(4.5 * px, 4.4 * px, 3 * px, 0.6 * px);
+        ctx.fillRect(9 * px, 4.4 * px, 2.5 * px, 0.6 * px);
+      } else if (acc === 'stanislas_gold_crown') {
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(4 * px, 1.2 * px, 8 * px, 2.2 * px);
+        ctx.fillRect(3.8 * px, 0.2 * px, 2.2 * px, 1.4 * px);
+        ctx.fillRect(6.9 * px, 0 * px, 2.2 * px, 1.4 * px);
+        ctx.fillRect(10 * px, 0.2 * px, 2.2 * px, 1.4 * px);
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(4.4 * px, 1.8 * px, 1.2 * px, 1.2 * px);
+        ctx.fillStyle = profile.accentColor; ctx.fillRect(7.4 * px, 1.6 * px, 1.2 * px, 1.2 * px);
+        ctx.fillStyle = '#3b82f6'; ctx.fillRect(10.4 * px, 1.8 * px, 1.2 * px, 1.2 * px);
+      } else if (acc === 'rpg_archmage_hat') {
+        ctx.fillStyle = '#312e81';
+        ctx.fillRect(7 * px, 0 * px, 2 * px, 1.4 * px);
+        ctx.fillRect(6 * px, 1.2 * px, 4 * px, 1.4 * px);
+        ctx.fillRect(5 * px, 2.4 * px, 6 * px, 1.4 * px);
+        ctx.fillRect(3 * px, 3.4 * px, 10 * px, 1.2 * px);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(5 * px, 3 * px, 6 * px, 0.8 * px);
+        ctx.fillStyle = profile.accentColor;
+        ctx.fillRect(7.2 * px, 2.2 * px, 1.6 * px, 1.6 * px);
+      } else if (acc === 'hacker_terminal_shades') {
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(3 * px, 3.8 * px, 10 * px, 2 * px);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(4 * px, 4 * px, 1 * px, 0.8 * px);
+        ctx.fillRect(6 * px, 4 * px, 1 * px, 0.8 * px);
+        ctx.fillRect(9 * px, 4 * px, 1 * px, 0.8 * px);
+        ctx.fillRect(11 * px, 4 * px, 1 * px, 0.8 * px);
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(7.2 * px, 4.2 * px, 1.6 * px, 0.6 * px);
+      } else if (acc === 'retro_plumber_cap') {
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(4 * px, 0.6 * px, 8 * px, 2.2 * px);
+        ctx.fillRect(2.8 * px, 2.4 * px, 10.4 * px, 1.2 * px);
+        ctx.fillRect(2 * px, 3 * px, 4 * px, 0.8 * px);
+        ctx.fillStyle = '#1f2937';
+        ctx.fillRect(4 * px, 6.2 * px, 8 * px, 1.2 * px);
+        ctx.fillRect(3 * px, 6.6 * px, 2 * px, 1 * px);
+        ctx.fillRect(11 * px, 6.6 * px, 2 * px, 1 * px);
+      } else if (acc === 'shinobi_ninja_band') {
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(3 * px, 2.4 * px, 10 * px, 2 * px);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(6 * px, 2.6 * px, 4 * px, 1.4 * px);
+        ctx.fillStyle = profile.accentColor;
+        ctx.fillRect(7.2 * px, 2.9 * px, 1.6 * px, 0.8 * px);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(1.8 * px, 2.8 * px, 1.4 * px, 2.6 * px);
+      } else if (acc === 'stealth_tux_bowtie') {
+        ctx.fillStyle = profile.accentColor;
+        ctx.fillRect(5.5 * px, 9.2 * px, 2 * px, 1.8 * px);
+        ctx.fillRect(8.5 * px, 9.2 * px, 2 * px, 1.8 * px);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(7.2 * px, 9.4 * px, 1.6 * px, 1.4 * px);
+        ctx.fillStyle = '#020617';
+        ctx.fillRect(3.8 * px, 4 * px, 3.8 * px, 2 * px);
+        ctx.fillRect(8.4 * px, 4 * px, 3.8 * px, 2 * px);
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(4.4 * px, 4.4 * px, 1.2 * px, 0.8 * px);
+        ctx.fillRect(9 * px, 4.4 * px, 1.2 * px, 0.8 * px);
+      } else if (acc === 'vr_matrix_goggles') {
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(3 * px, 3.4 * px, 10 * px, 3.2 * px);
+        ctx.fillStyle = profile.accentColor;
+        ctx.fillRect(4 * px, 4 * px, 8 * px, 2 * px);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(5 * px, 4.5 * px, 1 * px, 1 * px);
+        ctx.fillRect(10 * px, 4.5 * px, 1 * px, 1 * px);
+      } else if (acc === 'punk_cyber_crest') {
+        ctx.fillStyle = profile.accentColor;
+        ctx.fillRect(7 * px, 0 * px, 2 * px, 2 * px);
+        ctx.fillRect(6 * px, 0.8 * px, 4 * px, 1.2 * px);
+        ctx.fillRect(5 * px, 1.6 * px, 6 * px, 1.2 * px);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(2.4 * px, 5.6 * px, 1 * px, 1.4 * px);
+      }
+    }
+
+    // Gestion de l'import Excel
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('border-[#013afb]', 'bg-[#013afb]/10');
+    });
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('border-[#013afb]', 'bg-[#013afb]/10');
+    });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-[#013afb]', 'bg-[#013afb]/10');
+      if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length) handleFile(e.target.files[0]);
+    });
+
+    async function ensureFontsLoaded() {
+      if (!document.fonts) return;
+      try {
+        await Promise.all([
+          document.fonts.load('86px "Bebas Neue"'),
+          document.fonts.load('56px "Bebas Neue"'),
+          document.fonts.load('54px "Bebas Neue"'),
+          document.fonts.load('52px "Bebas Neue"'),
+          document.fonts.load('900 48px "JetBrains Mono"'),
+          document.fonts.load('800 26px "JetBrains Mono"'),
+          document.fonts.load('800 24px "JetBrains Mono"'),
+          document.fonts.load('800 22px "JetBrains Mono"'),
+          document.fonts.load('800 20px "JetBrains Mono"'),
+          document.fonts.load('900 60px "Anton"')
+        ]);
+        await document.fonts.ready;
+      } catch (err) {
+        console.warn('Chargement des polices...', err);
+      }
+    }
+
+    function handleFile(file) {
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(firstSheet);
+
+        membersList = json.map((row, idx) => {
+          const prenom = (row['Prénom'] || row['prenom'] || row['First Name'] || row['Prenom'] || '').toString().trim();
+          const nom = (row['Nom'] || row['nom'] || row['Last Name'] || '').toString().trim();
+          const fullName = `${prenom} ${nom}`.trim() || `MEMBRE ${idx + 1}`;
+          const email = (row['E-mail'] || row['Email'] || row['email'] || '').toString().trim();
+          return {
+            id: idx + 1,
+            prenom: prenom,
+            nom: nom,
+            fullName: fullName.toUpperCase(),
+            email: email,
+            duck: createDuckProfile()
+          };
+        }).filter(m => m.fullName.length > 0);
+
+        if (membersList.length > 0) {
+          document.getElementById('fileInfoBar').classList.remove('hidden');
+          document.getElementById('fileSummary').textContent = `<${membersList.length} ADHÉRENT(S) PRÊT(S) />`;
+          document.getElementById('topActions').classList.remove('hidden');
+          document.getElementById('emptyRectoNotice').classList.add('hidden');
+
+          await ensureFontsLoaded();
+          renderCards();
+          drawVersoCard();
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      membersList = [];
+      fileInput.value = '';
+      document.getElementById('fileInfoBar').classList.add('hidden');
+      document.getElementById('topActions').classList.add('hidden');
+      document.getElementById('emptyRectoNotice').classList.remove('hidden');
+      document.getElementById('cardsGrid').innerHTML = '';
+    });
+
+    document.getElementById('reRollAllBtn').addEventListener('click', () => {
+      membersList.forEach(m => m.duck = createDuckProfile());
+      renderCards();
+    });
+
+    function getRectoUrl() {
+      return document.getElementById('urlRectoInput').value.trim() || 'https://jump.epiboost.fr/login?redirect=%2F';
+    }
+
+    function getVersoUrl() {
+      return document.getElementById('urlVersoInput').value.trim() || 'https://www.epitech.eu/agenda/?ville=nancy';
+    }
+
+    function renderCards() {
+      const grid = document.getElementById('cardsGrid');
+      grid.innerHTML = '';
+      const campus = (document.getElementById('campusInput').value || 'NANCY').toUpperCase();
+
+      membersList.forEach(member => {
+        const box = document.createElement('div');
+        box.className = 'bg-white dark:bg-[#181818] border border-slate-200 dark:border-[#2a2a2a] p-4 rounded-2xl flex flex-col gap-3 shadow-xl';
+        box.innerHTML = `
+          <div class="relative w-full overflow-hidden rounded-xl shadow-lg border border-slate-200 dark:border-slate-800 bg-[#0f0f11]">
+            <canvas id="cardCanvas_${member.id}" width="1011" height="638" class="w-full h-auto block"></canvas>
+          </div>
+          <div class="flex items-center justify-between text-xs pt-1">
+            <span class="font-space-mono text-slate-800 dark:text-slate-300 font-semibold truncate max-w-[200px]">#${member.id} ${member.fullName}</span>
+            <div class="flex items-center gap-2">
+              <button onclick="reRollDuck(${member.id})" class="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#222222] dark:hover:bg-[#2e2e2e] text-[#013afb] dark:text-[#00ff97] border border-slate-300 dark:border-[#333333] font-space-mono text-[11px] font-bold">🎲 RE-LOOKER</button>
+              <button onclick="downloadCard(${member.id})" class="px-3 py-1.5 rounded-lg bg-[#013afb] hover:bg-[#002fd1] text-white font-space-mono text-[11px] font-bold">⬇ RECTO HD</button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(box);
+        drawCard(member, campus);
+      });
+    }
+
+    window.reRollDuck = function(id) {
+      const member = membersList.find(m => m.id === id);
+      if (member) {
+        member.duck = createDuckProfile();
+        drawCard(member, (document.getElementById('campusInput').value || 'NANCY').toUpperCase());
+      }
+    };
+
+    // -------------------------------------------------------------
+    // DESSIN DU RECTO (AGRANDISSEMENT DES CHAMPS POUR IMPRESSION)
+    // -------------------------------------------------------------
+    function drawCard(member, campus) {
+      const canvas = document.getElementById(`cardCanvas_${member.id}`);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const W = 1011, H = 638;
+
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = '#f2f3f5';
+      ctx.fillRect(0, 0, W, H);
+
+      // Logo texte Epitech haut gauche
+      ctx.fillStyle = '#0047e0';
+      ctx.font = '900 48px "JetBrains Mono", monospace';
+      ctx.fillText('EPITECH_', 65, 88);
+
+      // Devise haut droite : AGRANDIE à 20px
+      ctx.font = '800 20px "JetBrains Mono", monospace';
+      ctx.fillText('LE FUTUR', 820, 64);
+      ctx.fillText('SE CODE', 820, 88);
+      ctx.fillText('ICI_', 820, 112);
+
+      // Photo avatar canard
+      const photoX = 65, photoY = 135, photoW = 245, photoH = 265, photoR = 18;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(photoX + photoR, photoY);
+      ctx.lineTo(photoX + photoW - photoR, photoY);
+      ctx.quadraticCurveTo(photoX + photoW, photoY, photoX + photoW, photoY + photoR);
+      ctx.lineTo(photoX + photoW, photoY + photoH - photoR);
+      ctx.quadraticCurveTo(photoX + photoW, photoY + photoH, photoX + photoW - photoR, photoY + photoH);
+      ctx.lineTo(photoX + photoR, photoY + photoH);
+      ctx.quadraticCurveTo(photoX, photoY + photoH, photoX, photoY + photoH - photoR);
+      ctx.lineTo(photoX, photoY + photoR);
+      ctx.quadraticCurveTo(photoX, photoY, photoX + photoR, photoY);
+      ctx.closePath();
+      ctx.clip();
+
+      const duckCanvas = document.createElement('canvas');
+      duckCanvas.width = 256; duckCanvas.height = 256;
+      drawDuckAvatar(duckCanvas, member.duck);
+      ctx.drawImage(duckCanvas, photoX, photoY, photoW, photoH);
+      ctx.restore();
+
+      // Titre CLUB EPITECH
+      ctx.fillStyle = '#0047e0';
+      ctx.font = '900 86px "Bebas Neue", sans-serif';
+      ctx.fillText('CLUB EPITECH', 350, 190);
+
+      // Curseur magenta
+      ctx.fillStyle = '#d946ef';
+      ctx.fillRect(770, 172, 38, 18);
+
+      // Sous-titre CARTE DE MEMBRE : AGRANDI à 26px
+      ctx.fillStyle = '#0047e0';
+      ctx.font = '800 26px "JetBrains Mono", monospace';
+      ctx.fillText('C A R T E   D E   M E M B R E', 352, 230);
+
+      // Libellé "NOM" : AGRANDI à 22px
+      ctx.font = '800 22px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillText('NOM', 354, 282);
+
+      // Nom du membre
+      ctx.fillStyle = '#0f172a';
+      ctx.font = '900 56px "Bebas Neue", sans-serif';
+      let displayName = member.fullName;
+      if (displayName.length > 20) ctx.font = '900 46px "Bebas Neue", sans-serif';
+      ctx.fillText(displayName, 354, 334);
+
+      // Libellé "CAMPUS" : AGRANDI à 22px
+      ctx.font = '800 22px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillText('CAMPUS', 354, 386);
+
+      // Nom du campus
+      ctx.fillStyle = '#0f172a';
+      ctx.font = '900 54px "Bebas Neue", sans-serif';
+      ctx.fillText(campus, 354, 436);
+
+      // QR Code profil
+      const qrBoxX = 96, qrBoxY = 432, qrSize = 180;
+      ctx.fillStyle = '#ffffff';
+      if (ctx.roundRect) {
+        ctx.beginPath();
+        ctx.roundRect(qrBoxX - 12, qrBoxY - 12, qrSize + 24, qrSize + 24, 16);
+        ctx.fill();
+      } else {
+        ctx.fillRect(qrBoxX - 12, qrBoxY - 12, qrSize + 24, qrSize + 24);
+      }
+
+      const qrCanvas = document.createElement('canvas');
+      new QRious({ element: qrCanvas, value: getRectoUrl(), size: qrSize, level: 'H' });
+      ctx.drawImage(qrCanvas, qrBoxX, qrBoxY, qrSize, qrSize);
+
+      const centerDuckX = qrBoxX + qrSize / 2;
+      const centerDuckY = qrBoxY + qrSize / 2;
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(centerDuckX - 16, centerDuckY - 16, 32, 32);
+      ctx.fillStyle = member.duck.color.body; ctx.fillRect(centerDuckX - 12, centerDuckY - 12, 24, 24);
+      ctx.fillStyle = member.duck.beakColor; ctx.fillRect(centerDuckX - 8, centerDuckY + 2, 16, 6);
+
+      // SCANNE // EXP & PROFIL : AGRANDI à 54px
+      ctx.fillStyle = '#0047e0';
+      ctx.font = '900 54px "Bebas Neue", sans-serif';
+      ctx.fillText('SCANNE //', 354, 524);
+      ctx.fillText('EXP & PROFIL', 354, 576);
+
+      // Mosaïque décorative à droite
+      const U = 82;
+      ctx.fillStyle = '#0047e0'; ctx.fillRect(W - U, 168, U, U);
+      ctx.fillStyle = '#6366f1'; ctx.fillRect(W - U * 2, 168 + U, U, U);
+      ctx.fillStyle = '#d946ef'; ctx.fillRect(W - U, 168 + U * 2, U, U);
+      ctx.fillStyle = '#00e599';
+      const greenX = W - U * 3;
+      ctx.fillRect(greenX, 168 + U * 2, U, U);
+
+      const blockLeft = greenX - U * 0.45;
+      ctx.fillStyle = '#0047e0';
+      ctx.beginPath();
+      ctx.moveTo(blockLeft, 404);
+      ctx.lineTo(W - U * 2, 404);
+      ctx.lineTo(W - U * 2, 332);
+      ctx.lineTo(W, 332);
+      ctx.lineTo(W, H);
+      ctx.lineTo(blockLeft, H);
+      ctx.closePath();
+      ctx.fill();
+
+      // Mots d'action (CRÉER, APPRENDRE, PARTAGER, PROGRESSER) : AGRANDIS à 24px
+      const blockCenterX = (blockLeft + W) / 2;
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '800 24px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('CRÉER', blockCenterX, 448);
+      ctx.fillText('APPRENDRE', blockCenterX, 486);
+      ctx.fillText('PARTAGER', blockCenterX, 524);
+      ctx.fillText('PROGRESSER', blockCenterX, 562);
+      ctx.fillRect(blockCenterX - 24, 586, 48, 6);
+      ctx.textAlign = 'left';
+    }
+
+    window.downloadCard = function(id) {
+      const member = membersList.find(m => m.id === id);
+      const canvas = document.getElementById(`cardCanvas_${id}`);
+      if (!canvas || !member) return;
+      const link = document.createElement('a');
+      link.download = `Recto_ClubEpitech_${member.fullName.replace(/\s+/g, '_')}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    };
+
+    window.downloadVersoCard = function() {
+      drawVersoCard();
+      const canvas = document.getElementById('versoCanvas');
+      if (!canvas) return;
+      const link = document.createElement('a');
+      link.download = `Verso_ClubEpitech_Agenda.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    };
+
+    document.getElementById('downloadZipBtn').addEventListener('click', async () => {
+      drawVersoCard();
+      const versoCanvas = document.getElementById('versoCanvas');
+      const zip = new JSZip();
+      const folderRectos = zip.folder('01_RECTOS_Membres_ClubEpitech');
+      const folderVerso = zip.folder('02_VERSO_Agenda_ClubEpitech');
+
+      if (versoCanvas) {
+        const versoData = versoCanvas.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
+        folderVerso.file('Verso_ClubEpitech_Agenda.png', versoData, { base64: true });
+      }
+
+      if (membersList.length > 0) {
+        membersList.forEach(member => {
+          const canvas = document.getElementById(`cardCanvas_${member.id}`);
+          if (canvas) {
+            const dataUrl = canvas.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
+            folderRectos.file(`Recto_${member.fullName.replace(/\s+/g, '_')}.png`, dataUrl, { base64: true });
+          }
+        });
+      }
+
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `Cartes_Club_Epitech_Recto_Verso_${new Date().toISOString().slice(0, 10)}.zip`;
+      link.click();
+    });
+
+    document.getElementById('campusInput').addEventListener('input', () => { if (membersList.length) renderCards(); });
+    document.getElementById('urlRectoInput').addEventListener('input', () => { if (membersList.length) renderCards(); });
+    document.getElementById('urlVersoInput').addEventListener('input', drawVersoCard);
+
+    window.addEventListener('load', async () => {
+      await ensureFontsLoaded();
+      drawVersoCard();
+    });
+  </script>
+</body>
+</html>
